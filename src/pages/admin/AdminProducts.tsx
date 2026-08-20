@@ -140,7 +140,7 @@ const AdminProducts: React.FC = () => {
       {showForm ? (
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-xl font-semibold mb-6">{editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}</h2>
-          <ProductForm product={editingProduct} onSubmit={handleSubmit} categories={categories} isSubmitting={submitting} />
+          <ProductForm product={editingProduct ?? undefined} onSubmit={handleSubmit} categories={categories} isSubmitting={submitting} />
         </div>
       ) : (
         <>
