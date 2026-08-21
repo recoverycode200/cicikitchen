@@ -1,17 +1,11 @@
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import upload from '../middleware/uploadMiddleware.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
-
-// ES Module file path conversion
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
 // @route   POST /api/upload
-// @desc    Upload a file
+// @desc    Upload a file to Cloudinary
 // @access  Private/Admin
 router.post('/', protect, admin, upload.single('image'), (req, res) => {
   if (!req.file) {
@@ -21,8 +15,8 @@ router.post('/', protect, admin, upload.single('image'), (req, res) => {
     });
   }
 
-  // Return the correct path for frontend access
-  const imagePath = `/uploads/${req.file.filename}`;
+  // multer-storage-cloudinary mengembalikan URL lengkap di req.file.path
+  const imagePath = req.file.path;
 
   res.json({
     success: true,

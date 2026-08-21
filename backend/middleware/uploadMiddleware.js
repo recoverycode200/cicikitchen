@@ -1,43 +1,29 @@
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
-// Set up file paths for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Configure storage
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads/'));
-  },
-  filename(req, file, cb) {
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
-  },
+// Konfigurasi Cloudinary dari environment variables (Railway Variables)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Filter file types
-const checkFileType = (file, cb) => {
-  const filetypes = /jpg|jpeg|png|webp/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    return cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed!'));
-  }
-};
+// Storage langsung ke Cloudinary, bukan folder lokal.
+// Ini penting karena filesystem Railway bersifat ephemeral —
+// file yang disimpan secara lokal akan hilang setiap kali redeploy.
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'cici-kitchen', // semua foto produk masuk ke folder ini di Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }], // batasi ukuran max
+  },
+});
 
 // Initialize upload middleware
 const upload = multer({
   storage,
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
-  },
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
